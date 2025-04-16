@@ -2,12 +2,16 @@ use encoding_rs::{EUC_JP, Encoding, GBK, ISO_2022_JP, SHIFT_JIS};
 use std::{error::Error, fs, io, path::Path};
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // this order matters
+    // GBK should be the final fallback, very rarely used and produced
+    // pixelated characters but still used sometimes nevertheless
     let decoders: [&'static Encoding; 4] = [SHIFT_JIS, ISO_2022_JP, EUC_JP, GBK];
 
-    for decoder in decoders.iter() {
-        let dir = Path::new("./sample").read_dir().unwrap();
-        for dir_entry in dir.into_iter() {
-            let path = dir_entry.unwrap().path();
+    let dir = Path::new("./sample").read_dir().unwrap();
+    for dir_entry in dir.into_iter() {
+        let path = dir_entry.unwrap().path();
+
+        for decoder in decoders.iter() {
             if let Ok(result) = try_decode(path.clone(), decoder) {
                 println!(
                     "DECODING FILE {} WITH {} SUCCESSFUL!",
